@@ -1,0 +1,271 @@
+// Rational.cpp
+// Programmer: Jenesis Fabia
+// CIS054: C/C++ Programming
+// Date: November 7, 2021
+
+#include <iostream>
+#include "Rational.h"
+using namespace std;
+
+// By using the default parameter settings in Rational.h, this
+// constructor also provides the default constructor Rational()
+Rational::Rational(int num, int denom)
+{
+    setRational(num, denom);   // set numerator and denominator, reduce fraction, fix the sign 
+}
+
+// Helper function to fix a zero denominator and fix the sign if denominator is negative
+// setRational uses the LCD function to reduce the fraction to the lowest common denominator
+Rational Rational::setRational(int n, int d) // helper function
+{
+    numerator = n;
+    denominator = d;
+
+    // if denominator == 0 then set it = 1
+    if (denominator == 0)
+        denominator = 1;
+
+    if (denominator < 0) // if denominator is neg, multiply num and denom by -1
+    {
+        numerator = -numerator;     // fix sign of numerator +/-
+        denominator = -denominator; // denominator always +
+    }
+
+    int lcd = LCD(numerator, denominator);
+    if (denominator != 0)
+    {
+        numerator /= lcd;
+        denominator /= lcd;
+    }
+    return *this;   // return a pointer to the current object
+}
+
+// find the lowest common divisor using a recursive function
+int Rational::LCD(int v1, int v2)
+{
+    if (v2 == 0) return v1;
+    else return LCD(v2, v1 % v2);
+}
+
+// operator+ method
+Rational Rational::operator+ (Rational right)
+{
+    // create local (temporary) variables
+    int newNumerator;
+    int newDenominator;
+
+    // compute the result and save in the local variables
+    // the current object's numerator and denominator are not changed
+    newNumerator = numerator * right.denominator + right.numerator * denominator;
+    newDenominator = denominator * right.denominator;
+
+    // create a new Rational object with the result and return it
+    return Rational(newNumerator, newDenominator);
+}
+
+// operator+= method
+Rational Rational::operator+= (Rational right)
+{
+    // the current object is updated with the result of the += 
+    numerator = numerator * right.denominator + right.numerator * denominator;
+    denominator = denominator * right.denominator;
+
+    // fix the sign, reduce the fraction and return the current object
+    return setRational(numerator, denominator);
+}
+
+// the operator- method does the same thing as the add method
+Rational Rational::operator- (Rational right)
+{
+    // create local (temporary) variables
+    int newNumerator;
+    int newDenominator;
+
+    // compute the result and save in the local variables
+    // the current object's numerator and denominator are not changed
+    newNumerator = numerator * right.denominator - right.numerator * denominator;
+    newDenominator = denominator * right.denominator;
+
+    // create a new Rational object with the result and return it
+    return Rational(newNumerator, newDenominator);
+}
+
+Rational Rational::operator-= (Rational right)
+{
+    // the current object is updated with the result of the -= 
+    numerator = numerator * right.denominator - right.numerator * denominator;
+    denominator = denominator * right.denominator;
+
+    // fix the sign, reduce the fraction and return the current object
+    return setRational(numerator, denominator);
+}
+
+Rational::operator double() const // convert Rational to double and return
+{
+    return double(numerator) / double(denominator);
+}
+
+// Display a Rational number using the display() member method
+void Rational::display()
+{
+    cout << numerator << '/' << denominator;
+}
+
+// Display a Rational number using << and a friend function.
+// Friend functions are not part of the class and their code must be
+// declared outside of the class with no :: Scope Resolution Operator.
+// All function arguments must have their class defined 
+ostream& operator<< (ostream& out, Rational const& r)
+{
+    out << r.numerator << '/' << r.denominator;
+    return out; // This is to keep the stream flowing
+}
+
+// Rational.h
+// Programmer: Jenesis Fabia
+// Date: November 7, 2021
+// CIS054: C/C++ Programming
+
+#ifndef RATIONAL_H	// if this compiler macro is not defined
+#define RATIONAL_H	//	 then define it so this file will not be processed again
+
+#include <iostream>
+using namespace std;
+
+class Rational
+{
+    // Friend functions are actually declared outside the scope of the
+    // class but have the right to access public and private data and
+    // member function members that belong to the class. The friend
+    // function below gives the << operator for ostreams (including cout)
+    // the ability to output a Rational object by accessing its member data.
+    friend ostream& operator<< (ostream& out, Rational const& r);
+
+public:
+    Rational(int num = 0, int denom = 1);  // also provides default constructor
+
+    Rational add(const Rational right);
+    Rational operator+  (const Rational right);    // + addition operator
+    Rational operator+= (const Rational right);   // += addition assignment operator
+    Rational operator-  (const Rational right);    // + addition operator
+    Rational operator-= (const Rational right);   // += addition assignment operator
+    void display();
+    operator double() const; // convert Rational to double
+
+private:
+    int numerator;
+    int denominator;
+    // helper functions are private and not accessible by the main program
+    int LCD(const int v1, const int v2);
+    Rational setRational(const int n, const int d);
+};
+
+#endif
+
+// Rational Number Lab Assignment.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// RationalTest.cpp 
+// Create a Rational class defination
+//    Rational(numerator, denominator)
+// Programmer: Jenesis Fabia
+// CIS054: C/C++ Programminig
+// Date: November 7, 2021
+
+#include "Rational.h"   // double quotes = find file in project folder
+#include <iostream>     // angle brackets = find file in compiler folder
+#include <iomanip>
+using namespace std;
+
+// function prototypes
+void initializeNumbers(Rational&, Rational&, Rational&);
+void displayNumbers(Rational, Rational, Rational, const char*);
+
+int main(int argc, char* argv[])
+{
+    //  class    object
+    //    |        |
+    //    V        V
+    Rational n1;
+    Rational n2;
+    Rational n3;
+
+    // Title at the top of the display
+    cout << "    n1     n2   n3\n  ==================\n" << endl;
+
+    ///////// for each overloaded operator, 
+    /////////    initialize the values for n1, n2 and n3
+    /////////    test the operator
+    /////////    display the results for n1, n2 and n3
+
+    // Display values of n1, n2, n3 before each test
+    initializeNumbers(n1, n2, n3);
+    displayNumbers(n1, n2, n3, "Values of n1, n2 and n3 before the start of each test");
+
+    // Test operator+
+    initializeNumbers(n1, n2, n3); // reset the values before each test
+    n1 = n2 + n3;          // n2 + n3 = 3/4 + 2/3 = 9/12 + 8/12 = 17/12
+    displayNumbers(n1, n2, n3, "n1 = n2 + n3 (n1 should be 17/12)");
+
+    // Test operator+=
+    initializeNumbers(n1, n2, n3); // reset the values before each test
+    n2 += n3;
+    displayNumbers(n1, n2, n3, "n1 += n2 += n3 (n2 should be 17/12)");
+
+    ///////// The test for + and += have been completed. You need to write the tests 
+    ///////// for -   -=   *   *=   /   /=   =   and ==
+
+    // Test operator-
+    initializeNumbers(n1, n2, n3); 
+    n1 = n2 - n3;
+    displayNumbers(n1, n2, n3, "n1 = n2 - n3 (n1 should be 1/12)");
+
+    // Test operator-=
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 -= n3;
+    displayNumbers(n1, n2, n3, "n1 = n2 -= n3 (n2 should be 1/12)");
+
+    // Test operator*
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 * n3;
+    displayNumbers(n1, n2, n3, "n1 = n2 *n3 (n1 should be 1/2");
+
+    // Test operator*=
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 *= n3;
+    displayNumbers(n1, n2, n3, "n1 = n2*= n3 (n2 should be 1/2)");
+
+    // Test operator/
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 / n3;
+    displayNumbers(n1, n2, n3, "n1 = n2/n3 (n1 should be 9/8)");
+
+    // Test operator/=
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 /= n3;
+    displayNumbers(n1, n2, n3, "n1 = n2 /= n3 (n2 should be 9/8)");
+
+    // Test operator==  this should return a TRUE if both numbers are the same, otherwise FALSE
+    initializeNumbers(n1, n2, n3);
+    n1 = n2 = n3;
+    displayNumbers(n1, n2, n3, "n1 = n2 = n3 (n2 should equal to n3)");
+
+    // Test operator double
+    cout << endl << endl << "**** Rational number to double. 1/12 displays as 0.0833333" << endl;
+    cout << "double(n2) = " << double(n2) << endl;
+    cout << endl;
+    return 0;
+}
+
+// Initialize each of the variables before testing each rational operator
+void initializeNumbers(Rational& n1, Rational& n2, Rational& n3)
+{
+    n1 = Rational();     //    0  no arguments
+    n2 = Rational(3, 4);  //   3/4
+    n3 = Rational(2, 3);  //   2/3
+}
+
+// Display each of the rational numbers using the friend function <<
+void displayNumbers(Rational n1, Rational n2, Rational n3, const char* msg)
+{
+    cout << setw(4) << n1 << setw(4) << n2 << setw(4) << n3 << "\t" << msg << endl;
+}
+
